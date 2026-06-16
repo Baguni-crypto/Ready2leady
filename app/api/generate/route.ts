@@ -1,7 +1,7 @@
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
+const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,14 +12,13 @@ export async function POST(req: NextRequest) {
       ? `Blend these genres naturally: ${genreLabels}`
       : `Genre: ${genreLabels}`
 
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
-      generationConfig: { responseMimeType: 'application/json' },
-    })
-
-    const prompt = `You are a language learning story generator. Respond with ONLY valid JSON, no markdown, no code blocks, no explanation.
-
-Create a short language learning story with this exact JSON structure:
+    const message = await client.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4000,
+      system: 'You are a language learning story generator. Respond with ONLY valid JSON, no markdown, no code blocks, no explanation. Start directly with { and end with }.',
+      messages: [{
+        role: 'user',
+        content: `Create a short language learning story with this exact JSON structure:
 {
   "title": "story title in ${targetLang}",
   "titleTr": "title translation in ${nativeLang}",
@@ -46,10 +45,10 @@ Requirements:
 - Each paragraph: 3-4 key vocabulary words
 - Simple sentences for beginner learners
 - ONLY output JSON`
+      }]
+    })
 
-    const result = await model.generateContent(prompt)
-    const raw = result.response.text()
-
+    const raw = message.content[0].type === 'text' ? message.content[0].text : ''
     const start = raw.indexOf('{'), end = raw.lastIndexOf('}')
     const jsonStr = start !== -1 && end > start ? raw.slice(start, end + 1) : raw
     const parsed = JSON.parse(jsonStr)
