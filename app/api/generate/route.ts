@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export const runtime = 'edge'
 
 async function callClaude(prompt: string, maxTokens: number, apiKey: string) {
   const res = await fetch('https://api.anthropic.com/v1/messages', {
