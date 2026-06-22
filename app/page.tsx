@@ -42,7 +42,9 @@ export default function Home() {
 
   // 난이도 확인 샘플 — 레벨만 있으면 생성 (장르/주제 없어도 됨)
   const loadCheck = async (st: AppState) => {
-    setCheckLoading(true); setCheckData(null); goTo('levelcheck')
+    setCheckData(null)
+    setCheckLoading(true)
+    goTo('levelcheck')
     const nl = LANGS.find(l => l.c === st.native)?.n || ''
     const tl = LANGS.find(l => l.c === st.target)?.n || ''
     try {
@@ -57,9 +59,16 @@ export default function Home() {
           checkOnly: true,
         })
       })
-      setCheckData(await res.json())
-    } catch {}
-    setCheckLoading(false)
+      if (!res.ok) throw new Error('API error')
+      const data = await res.json()
+      console.log('checkData received:', JSON.stringify(data).slice(0, 100))
+      setCheckData(data)
+    } catch (err) {
+      console.error('loadCheck error:', err)
+      setCheckData(null)
+    } finally {
+      setCheckLoading(false)
+    }
   }
 
   const adjustLevel = (dir: 'easier' | 'harder') => {
