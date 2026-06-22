@@ -182,7 +182,7 @@ export default function Home() {
               <>
                 <div className="border border-gray-100 rounded-2xl p-4 bg-gray-50 mb-5">
                   <div className="text-sm font-medium text-emerald-600 mb-3">{checkData.title}</div>
-                  {checkData.paragraphs.map((para, pi) => (
+                  {checkData.paragraphs?.map((para, pi) => (
                     <div key={pi} className="mb-4 last:mb-0">
                       <div className="text-xs text-gray-400 mb-1.5 font-medium">단락 {pi + 1}</div>
                       {para.sentences.map((s, si) => (
